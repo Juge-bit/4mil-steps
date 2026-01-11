@@ -40,6 +40,11 @@
     .title h1{margin:0;letter-spacing:.2px}
 .title h1.mainTitle{font-size:28px; letter-spacing:.3px}
 
+    .percentBlock{
+  text-align: center;
+  margin-top: 6px;
+}
+
     .title p{margin:6px 0 0;color:var(--muted);font-size:13px;line-height:1.35}
     .pill{
       display:inline-flex;align-items:center;gap:10px;
@@ -229,8 +234,10 @@
           </div>
         </div>
 
-        <div class="bigNumber" id="percentText">—%</div>
-        <div class="muted" id="paceText">—</div>
+<div class="percentBlock">
+  <div class="bigNumber" id="percentText">—%</div>
+  <div class="muted" id="paceText">—</div>
+</div>
 
         <div class="progressOuter" aria-label="Edistymispalkki">
           <div class="progressInner" id="progressInner"></div>
@@ -575,3 +582,4 @@
   </script>
 </body>
 </html>
+
