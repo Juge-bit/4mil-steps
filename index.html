@@ -502,13 +502,15 @@
       setStatus("live", data.lastUpdatedAt ? ("Viimeisin päivitys: " + new Date(data.lastUpdatedAt).toLocaleString("fi-FI")) : "Live-data");
 
       const total = data.totalSteps;
-const asOfSteps = data.asOf.steps;
+      const asOfSteps = data.asOf.steps;
 
-document.getElementById("todaySteps").textContent = fmt(asOfSteps);
+      document.getElementById("totalSteps").textContent = fmt(total);
+      document.getElementById("todaySteps").textContent = fmt(asOfSteps);
 
-const d = new Date(data.asOf.date + "T12:00:00");
-document.getElementById("todayDate").textContent =
-  d.toLocaleDateString("fi-FI", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+
+      const d = new Date(data.asOf.date + "T12:00:00");
+      document.getElementById("todayDate").textContent =
+      d.toLocaleDateString("fi-FI", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
 
 
       const pct = clamp((total / GOAL) * 100, 0, 100);
@@ -534,8 +536,7 @@ document.getElementById("todayDate").textContent =
 
 
       renderMilestones(total);
-      renderBars(data.last14Days);
-
+      
       // Show last 14 days ending at "asOf" (yesterday)
       const barsDays = data.last14Days.filter(d => d.date <= data.asOf.date);  
       renderBars(barsDays.slice(-14));
@@ -590,6 +591,7 @@ document.getElementById("todayDate").textContent =
   </script>
 </body>
 </html>
+
 
 
 
