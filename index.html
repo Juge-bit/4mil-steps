@@ -228,7 +228,7 @@
             <div class="sub"><span class="muted">Tavoite:</span> 4 000 000</div>
           </div>
           <div class="kpi">
-            <div class="label">Tänään</div>
+            <div class="label">Eilen</div>
             <div class="value" id="todaySteps">—</div>
             <div class="sub" id="todayDate">—</div>
           </div>
@@ -475,20 +475,22 @@
     })();
 
     // ====== DATA LOADER ======
-    async function loadData() {
-      const res = await fetch(DASHBOARD_ENDPOINT, { cache: "no-store" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+   async function loadData() {
+  const res = await fetch(DASHBOARD_ENDPOINT, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      const j = await res.json();
-      if (!j || j.ok !== true) throw new Error(j?.error || "Invalid payload");
+  const j = await res.json();
+  if (!j || j.ok !== true) throw new Error(j?.error || "Invalid payload");
 
-      return {
-        totalSteps: j.totalSteps,
-        today: { date: j.today, steps: j.todaySteps },
-        last14Days: j.last14Days,
-        lastUpdatedAt: j.lastUpdatedAt
-      };
-    }
+  // Use "yesterday" as the last completed day.
+  // If you ever miss a day, this still keeps the UI aligned to yesterday.
+  return {
+    totalSteps: j.totalSteps,
+    asOf: { date: j.yesterday, steps: j.yesterdaySteps },   // <- KEY CHANGE
+    last14Days: j.last14Days,
+    lastUpdatedAt: j.lastUpdatedAt
+  };
+}
 
     // ====== MAIN RENDER ======
     async function render() {
@@ -500,13 +502,14 @@
       setStatus("live", data.lastUpdatedAt ? ("Viimeisin päivitys: " + new Date(data.lastUpdatedAt).toLocaleString("fi-FI")) : "Live-data");
 
       const total = data.totalSteps;
-      const todaySteps = data.today.steps;
+const asOfSteps = data.asOf.steps;
 
-      document.getElementById("totalSteps").textContent = fmt(total);
-      document.getElementById("todaySteps").textContent = fmt(todaySteps);
+document.getElementById("todaySteps").textContent = fmt(asOfSteps);
 
-      const d = new Date(data.today.date + "T12:00:00");
-      document.getElementById("todayDate").textContent = d.toLocaleDateString("fi-FI", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+const d = new Date(data.asOf.date + "T12:00:00");
+document.getElementById("todayDate").textContent =
+  d.toLocaleDateString("fi-FI", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+
 
       const pct = clamp((total / GOAL) * 100, 0, 100);
       document.getElementById("percentText").textContent = pct.toFixed(2).replace(".", ",") + "%";
@@ -516,7 +519,7 @@
       document.getElementById("remainingSteps").textContent = fmt(remaining);
 
       // Pace estimate
-      const now = new Date();
+      const now = new Date(data.asOf.date + "T12:00:00"); // anchor calculations to "as of yesterday"
       const yearStart = new Date("2026-01-01T00:00:00");
       const dayOfYear = Math.max(1, Math.ceil((now - yearStart)/(24*3600*1000)) + 1);
       const avgSoFar = total / dayOfYear;
@@ -525,12 +528,17 @@
       const daysLeft = Math.max(1, Math.ceil((yearEnd - now)/(24*3600*1000)));
       const requiredPace = remaining / daysLeft;
 
-      document.getElementById("dailyPace").textContent = `${fmt(requiredPace)} askelta/pv (tarvittava)`;
+      document.getElementById("dailyPace").textContent = `Tarvittava päivätahti: ${fmt(requiredPace)} askelta`;
       document.getElementById("paceText").textContent =
-        `Keskiarvo tähän asti: ${fmt(avgSoFar)} askelta/pv • Päiviä jäljellä: ${fmt(daysLeft)}`;
+      `Tilanne eilisen jälkeen • Keskiarvo tähän asti: ${fmt(avgSoFar)} askelta/pv • Päiviä jäljellä: ${fmt(daysLeft)}`;
+
 
       renderMilestones(total);
       renderBars(data.last14Days);
+
+      // Show last 14 days ending at "asOf" (yesterday)
+      const barsDays = data.last14Days.filter(d => d.date <= data.asOf.date);  
+      renderBars(barsDays.slice(-14));
 
       const best = pickBestDay(data.last14Days);
       document.getElementById("bestDay").textContent = best.date
@@ -582,4 +590,5 @@
   </script>
 </body>
 </html>
+
 
