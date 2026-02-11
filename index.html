@@ -483,13 +483,14 @@
 
   // Use "yesterday" as the last completed day.
   // If you ever miss a day, this still keeps the UI aligned to yesterday.
-  return {
-    totalSteps: j.totalSteps,
-    asOf: { date: j.yesterday, steps: j.yesterdaySteps },
-    last14Days: j.last14Days,
-    topDays: j.topDays || [],
-    lastUpdatedAt: j.lastUpdatedAt
-  };
+return {
+  totalSteps: j.totalSteps,
+  asOf: { date: j.yesterday, steps: j.yesterdaySteps },
+  last14Days: j.last14Days,
+  topDays: j.topDays || [],
+  lastUpdatedAt: j.lastUpdatedAt
+};
+
 }
 
     // ====== MAIN RENDER ======
@@ -613,6 +614,7 @@ if (top.length === 0) {
   </script>
 </body>
 </html>
+
 
 
 
