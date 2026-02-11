@@ -267,11 +267,10 @@
 
       <aside class="card">
         <div class="sideList">
-          <div class="row">
-            <div>
-              <div class="muted" style="font-size:12px;">Tähän asti paras päivä</div>
-              <b id="bestDay">—</b>
-            </div>
+         <div class="row" style="display:block">
+  <div class="muted" style="font-size:12px;">Tähän asti parhaat päivät TOP #5</div>
+  <div id="topDaysList" style="margin-top:10px; display:grid; gap:8px;"></div>
+</div>
             <div style="text-align:right">
               <div class="muted" style="font-size:12px;">Askeleet</div>
               <b id="bestSteps">—</b>
@@ -486,8 +485,9 @@
   // If you ever miss a day, this still keeps the UI aligned to yesterday.
   return {
     totalSteps: j.totalSteps,
-    asOf: { date: j.yesterday, steps: j.yesterdaySteps },   // <- KEY CHANGE
+    asOf: { date: j.yesterday, steps: j.yesterdaySteps },
     last14Days: j.last14Days,
+    topDays: j.topDays || [],
     lastUpdatedAt: j.lastUpdatedAt
   };
 }
@@ -541,11 +541,33 @@
       const barsDays = data.last14Days.filter(d => d.date <= data.asOf.date);  
       renderBars(barsDays.slice(-14));
 
-      const best = pickBestDay(data.last14Days);
-      document.getElementById("bestDay").textContent = best.date
-        ? new Date(best.date+"T12:00:00").toLocaleDateString("fi-FI",{ weekday:"short", month:"short", day:"numeric" })
-        : "—";
-      document.getElementById("bestSteps").textContent = fmt(best.steps || 0);
+      // TOP 5 vuoden alusta (backend tuottaa data.topDays)
+const list = document.getElementById("topDaysList");
+list.innerHTML = "";
+
+const top = Array.isArray(data.topDays) ? data.topDays.slice(0, 5) : [];
+if (top.length === 0) {
+  list.textContent = "—";
+} else {
+  for (const item of top) {
+    const row = document.createElement("div");
+    row.style.display = "flex";
+    row.style.justifyContent = "space-between";
+    row.style.gap = "12px";
+
+    const dt = new Date(item.date + "T12:00:00");
+    const left = document.createElement("div");
+    left.textContent = dt.toLocaleDateString("fi-FI", { weekday: "short", month: "short", day: "numeric" });
+
+    const right = document.createElement("div");
+    right.style.fontVariantNumeric = "tabular-nums";
+    right.textContent = fmt(item.steps || 0);
+
+    row.appendChild(left);
+    row.appendChild(right);
+    list.appendChild(row);
+  }
+}
 
       const avg14 = data.last14Days.reduce((a,b)=>a+(b.steps||0),0) / Math.max(1, data.last14Days.length);
       document.getElementById("avg14").textContent = fmt(avg14);
@@ -591,6 +613,7 @@
   </script>
 </body>
 </html>
+
 
 
 
