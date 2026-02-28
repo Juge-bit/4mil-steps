@@ -17,10 +17,32 @@ function doGet(e) {
       return jsonOut_(400, { ok: false, error: 'Invalid year' });
     }
 
+    refreshRecentDailyIngestForDashboard_(3);
     const payload = buildDashboardPayload_(year);
     return jsonOut_(200, payload);
   } catch (err) {
     return jsonOut_(500, { ok: false, error: String(err) });
+  }
+}
+
+
+function refreshRecentDailyIngestForDashboard_(daysBack) {
+  try {
+    if (typeof ingestOneDay_ !== 'function' || typeof INGEST_FOLDER_ID === 'undefined') {
+      return;
+    }
+
+    const folder = DriveApp.getFolderById(INGEST_FOLDER_ID);
+    const today = new Date();
+    const safeDaysBack = Math.max(1, Number(daysBack) || 1);
+
+    for (let back = safeDaysBack; back >= 1; back--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - back);
+      ingestOneDay_(folder, d);
+    }
+  } catch (err) {
+    console.log(`Dashboard ingest refresh skipped: ${err}`);
   }
 }
 

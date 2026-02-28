@@ -32,7 +32,16 @@ function ingestOneDay_(folder, dateObj) {
 
 function findFileByExactName_(folder, exactName) {
   const it = folder.getFilesByName(exactName);
-  return it.hasNext() ? it.next() : null;
+  let latest = null;
+
+  while (it.hasNext()) {
+    const candidate = it.next();
+    if (!latest || candidate.getLastUpdated().getTime() > latest.getLastUpdated().getTime()) {
+      latest = candidate;
+    }
+  }
+
+  return latest;
 }
 
 function parseDailyStepsFromCsv_(file) {
